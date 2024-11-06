@@ -32,7 +32,9 @@ A purchase of **$120** yields: [ 2*(120 - 100) + 1*(100 - 50) = **90** points ]
 Clone the repository and navigate to the project directory:
 
 ```bash
-git clone --branch master https://github.com/Abhishek90798/RewardProgramApp.git && cd RewardProgramApp
+git clone --branch master https://github.com/Abhishek90798/RewardProgramApp.git
+cd RewardProgramApp
+```
 
 ### API Endpoints
 
