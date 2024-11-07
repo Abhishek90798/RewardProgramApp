@@ -13,12 +13,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.retailer.rewardprogram.dao.ITransactionsRepository;
 import com.retailer.rewardprogram.dto.RewardInMonth;
 import com.retailer.rewardprogram.dto.RewardsResponse;
-import com.retailer.rewardprogram.exceptions.CustomerNotFoundException;
-import com.retailer.rewardprogram.exceptions.CustomerNotFoundException;
+import com.retailer.rewardprogram.exceptions.NoTransactionFoundException;
 import com.retailer.rewardprogram.model.Transaction;
 import com.retailer.rewardprogram.service.IRewardService;
 
@@ -27,7 +28,9 @@ import com.retailer.rewardprogram.service.IRewardService;
  * based on their transaction data.
  */
 @Service
-public class RewardService implements IRewardService{
+public class RewardService implements IRewardService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RewardService.class);
 
     @Autowired
     private ITransactionsRepository repository;
@@ -40,10 +43,14 @@ public class RewardService implements IRewardService{
      * @return a RewardsResponse object containing the monthly points and total points
      */
     public RewardsResponse calculateRewards(Long customerId) {
+        logger.info("Calculating reward points for customer ID: {}", customerId);
+        
+        // Assuming in repository we have record of last three month only         
         List<Transaction> transactions = repository.findByCustomerId(customerId);
         
         if (transactions.isEmpty()) {
-            throw new CustomerNotFoundException("Customer with ID " + customerId + " not found.");
+            logger.error("No transactions found for customer ID: {}", customerId);
+            throw new NoTransactionFoundException("Customer with ID " + customerId + " not found.");
         }
 
         // Group transactions by month and calculate points
@@ -64,6 +71,7 @@ public class RewardService implements IRewardService{
             list.add(new RewardInMonth(Month.of(monthNo).getDisplayName(TextStyle.FULL, Locale.ENGLISH), monthlyPoints.get(key)));
         }
 
+        logger.info("Successfully calculated rewards for customer ID: {} with total points: {}", customerId, sum);
         return new RewardsResponse(new ArrayList<>(list), sum, customerId);
     }
 
@@ -74,6 +82,8 @@ public class RewardService implements IRewardService{
      * @return a list of RewardsResponse objects for all customers
      */
     public List<RewardsResponse> calculateRewardsForAll() {
+        logger.info("Calculating rewards for all customers");
+
         List<Transaction> lastThreeMonthsTransactions = Arrays.asList(
                 // Customer 1 transactions across three months
                 new Transaction(1L, 101L, 120.0, LocalDate.of(2023, 7, 10)),
@@ -124,6 +134,7 @@ public class RewardService implements IRewardService{
             rewardsResponses.add(new RewardsResponse(rewardInMonths, totalPoints, customerId));
         }
 
+        logger.info("Successfully calculated rewards for all customers. Total records: {}", rewardsResponses.size());
         return rewardsResponses;
     }
 
@@ -135,10 +146,14 @@ public class RewardService implements IRewardService{
      */
     private int calculatePoints(double amount) {
         if (amount > 100) {
+            logger.debug("Transaction amount over $100: {}. Points: {}", amount, (int) ((amount - 100) * 2) + 50);
             return (int) ((amount - 100) * 2) + 50;  
         } else if (amount > 50) {
+            logger.debug("Transaction amount between $50 and $100: {}. Points: {}", amount, (int) (amount - 50));
             return (int) (amount - 50);  
         }
+
+        logger.debug("Transaction amount below $50: {}. No points earned.", amount);
         return 0;  
     }
 }

@@ -19,7 +19,7 @@ import org.mockito.MockitoAnnotations;
 import com.retailer.rewardprogram.dao.ITransactionsRepository;
 import com.retailer.rewardprogram.dto.RewardInMonth;
 import com.retailer.rewardprogram.dto.RewardsResponse;
-import com.retailer.rewardprogram.exceptions.CustomerNotFoundException;
+import com.retailer.rewardprogram.exceptions.NoTransactionFoundException;
 import com.retailer.rewardprogram.model.Transaction;
 import com.retailer.rewardprogram.service.impl.RewardService;
 
@@ -79,7 +79,7 @@ class RewardServiceTest {
     void testCustomerNotFound() {
         long customerId = 999L;
         when(repository.findByCustomerId(customerId)).thenReturn(new ArrayList<>());
-        assertThrows(CustomerNotFoundException.class, () -> rewardService.calculateRewards(customerId));
+        assertThrows(NoTransactionFoundException.class, () -> rewardService.calculateRewards(customerId));
     }
 
     /**
