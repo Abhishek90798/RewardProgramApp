@@ -1,4 +1,4 @@
-package com.retailer.rewardprogram.service;
+package com.retailer.rewardprogram.service.impl;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -7,27 +7,44 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.retailer.rewardprogram.dao.TransactionsRepository;
+import com.retailer.rewardprogram.dao.ITransactionsRepository;
+import com.retailer.rewardprogram.dto.RewardInMonth;
+import com.retailer.rewardprogram.dto.RewardsResponse;
+import com.retailer.rewardprogram.exceptions.CustomerNotFoundException;
+import com.retailer.rewardprogram.exceptions.CustomerNotFoundException;
 import com.retailer.rewardprogram.model.Transaction;
-import com.retailer.rewardprogram.response.RewardInMonth;
-import com.retailer.rewardprogram.response.RewardsResponse;
+import com.retailer.rewardprogram.service.IRewardService;
 
+/**
+ * Service class responsible for calculating reward points for customers
+ * based on their transaction data.
+ */
 @Service
-public class RewardService {
+public class RewardService implements IRewardService{
 
     @Autowired
-    private TransactionsRepository repository;
+    private ITransactionsRepository repository;
 
-    // Calculate rewards for a specific customer for last three month transactions
+    /**
+     * Calculates the reward points for a specific customer based on their transactions
+     * in the last three months.
+     *
+     * @param customerId the unique identifier of the customer
+     * @return a RewardsResponse object containing the monthly points and total points
+     */
     public RewardsResponse calculateRewards(Long customerId) {
         List<Transaction> transactions = repository.findByCustomerId(customerId);
+        
+        if (transactions.isEmpty()) {
+            throw new CustomerNotFoundException("Customer with ID " + customerId + " not found.");
+        }
 
         // Group transactions by month and calculate points
         Map<String, Integer> monthlyPoints = transactions.stream().collect(
@@ -50,9 +67,13 @@ public class RewardService {
         return new RewardsResponse(new ArrayList<>(list), sum, customerId);
     }
 
-    // Calculate rewards for all customers in the last three months
+    /**
+     * Calculates the reward points for all customers based on their transactions
+     * in the last three months.
+     *
+     * @return a list of RewardsResponse objects for all customers
+     */
     public List<RewardsResponse> calculateRewardsForAll() {
-       
         List<Transaction> lastThreeMonthsTransactions = Arrays.asList(
                 // Customer 1 transactions across three months
                 new Transaction(1L, 101L, 120.0, LocalDate.of(2023, 7, 10)),
@@ -86,7 +107,6 @@ public class RewardService {
                         )
                 ));
 
-        
         List<RewardsResponse> rewardsResponses = new ArrayList<>();
 
         for (Map.Entry<Long, Map<String, Integer>> customerEntry : customerRewards.entrySet()) {
@@ -107,7 +127,12 @@ public class RewardService {
         return rewardsResponses;
     }
 
-    // Calculate reward points based on the transaction amount
+    /**
+     * Calculates the reward points based on the transaction amount.
+     *
+     * @param amount the transaction amount
+     * @return the calculated reward points
+     */
     private int calculatePoints(double amount) {
         if (amount > 100) {
             return (int) ((amount - 100) * 2) + 50;  
