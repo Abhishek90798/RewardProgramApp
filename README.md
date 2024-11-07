@@ -5,6 +5,7 @@ This project provides a rewards program for retail customers, enabling the calcu
 the application follows RESTful design principles and offers an API that allows clients to retrieve reward information for individual customers and all customers.
 
 ## Reward Calculation Rules
+For each transaction made by customers over the last three months, the following reward points will be calculated based on the amount spent:
 - Customers earn **2 points** for every dollar spent **over $100**.
 - Customers earn **1 point** for every dollar spent **between $50 and $100**.
 
