@@ -34,15 +34,119 @@ Clone the repository and navigate to the project directory:
 
 ```bash
 git clone --branch master https://github.com/Abhishek90798/RewardProgramApp.git
+```
+Navigate to the project directory:
+
+```bash
 cd RewardProgramApp
 ```
+Use Maven to install the required dependencies:
+
+```bash
+mvn clean install
+```
+
+Configure the database:
+```
+spring.datasource.url=jdbc:mysql://localhost:3306/yourdb
+spring.datasource.username=?
+spring.datasource.password=?
+spring.jpa.hibernate.ddl-auto=update
+```
+
+Run the application:
+```
+mvn spring-boot:run
+```
+
+
 
 ### API Endpoints
 
 1. **Get Rewards Points by CustomerId**  
    **GET** - `http://localhost:8081/api/rewards/<customer_Id>`
+   
+   **ResponseLikeThis**
+   ```json
+   {
+    "customerId": 101L,
+    "monthlyPoints": [
+        {
+            "month": "October",
+            "amount": 425
+        },
+        {
+            "month": "September",
+            "amount": 110
+        },
+        {
+            "month": "August",
+            "amount": 245
+        }
+    ],
+    "totalPoints": 780
+}```
 
-2. **Get Rewards Points of All Customers**  
+3. **Get Rewards Points of All Customers**  
    **GET** - `http://localhost:8081/api/rewards/all`
+
+   **Response**
+   ```json
+   [
+    {
+        "customerId": 101,
+        "monthlyPoints": [
+            {
+                "month": "SEPTEMBER",
+                "amount": 400
+            },
+            {
+                "month": "AUGUST",
+                "amount": 25
+            },
+            {
+                "month": "JULY",
+                "amount": 90
+            }
+        ],
+        "totalPoints": 515
+    },
+    {
+        "customerId": 102,
+        "monthlyPoints": [
+            {
+                "month": "SEPTEMBER",
+                "amount": 55
+            },
+            {
+                "month": "AUGUST",
+                "amount": 180
+            },
+            {
+                "month": "JULY",
+                "amount": 40
+            }
+        ],
+        "totalPoints": 275
+    },
+    {
+        "customerId": 103,
+        "monthlyPoints": [
+            {
+                "month": "SEPTEMBER",
+                "amount": 55
+            },
+            {
+                "month": "AUGUST",
+                "amount": 210
+            },
+            {
+                "month": "JULY",
+                "amount": 60
+            }
+        ],
+        "totalPoints": 325
+    }
+]```
 
 
