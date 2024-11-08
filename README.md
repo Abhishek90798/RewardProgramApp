@@ -61,7 +61,7 @@ mvn spring-boot:run
 
 
 
-### API Endpoints
+## API Endpoints
 
 1. **Get Rewards Points by CustomerId**  
    **GET** - `http://localhost:8081/api/rewards/{customerId}`
@@ -86,7 +86,7 @@ mvn spring-boot:run
     ],
     "totalPoints": 780
    }
-```
+   ```
 
 3. **Get Rewards Points of All Customers**  
    **GET** - `http://localhost:8081/api/rewards/all`
@@ -148,7 +148,7 @@ mvn spring-boot:run
         ],
         "totalPoints": 325
     }
-  ]
-```
+   ]
+   ```
 
 
