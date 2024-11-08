@@ -64,12 +64,12 @@ mvn spring-boot:run
 ### API Endpoints
 
 1. **Get Rewards Points by CustomerId**  
-   **GET** - `http://localhost:8081/api/rewards/<customer_Id>`
+   **GET** - `http://localhost:8081/api/rewards/{customerId}`
    
    **ResponseLikeThis**
-   ```json
+   ```
    {
-    "customerId": 101L,
+    "customerId": 101,
     "monthlyPoints": [
         {
             "month": "October",
@@ -85,7 +85,8 @@ mvn spring-boot:run
         }
     ],
     "totalPoints": 780
-}```
+   }
+```
 
 3. **Get Rewards Points of All Customers**  
    **GET** - `http://localhost:8081/api/rewards/all`
@@ -147,6 +148,7 @@ mvn spring-boot:run
         ],
         "totalPoints": 325
     }
-]```
+  ]
+```
 
 
