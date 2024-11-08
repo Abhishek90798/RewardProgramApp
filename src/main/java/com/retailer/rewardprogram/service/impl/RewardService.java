@@ -51,8 +51,20 @@ public class RewardService implements IRewardService {
 		}
 		logger.info("Calculating reward points for customer ID: {}", customerId);
 
-		// Assuming in repository we have record of last three month only
-		List<Transaction> transactions = repository.findByCustomerId(customerId);
+		LocalDate today = LocalDate.now();
+		List<String> lastThreeMonths = List.of(
+				today.minusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM")),
+				today.minusMonths(2).format(DateTimeFormatter.ofPattern("yyyy-MM")),
+				today.minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM"))
+		);
+
+		LocalDate lastDayOfLastMonth = today.withDayOfMonth(1).minusDays(1);
+		LocalDate firstDayOfThreeMonthsAgo = today.minusMonths(3).withDayOfMonth(1);
+
+		List<Transaction> transactions = repository.findByCustomerId(customerId).stream()
+				.filter(transaction -> !transaction.getDate().isBefore(firstDayOfThreeMonthsAgo)
+						&& !transaction.getDate().isAfter(lastDayOfLastMonth))
+				.collect(Collectors.toList());
 
 		if (transactions.isEmpty()) {
 			logger.error("No transactions found for customer ID: {}", customerId);
@@ -60,21 +72,21 @@ public class RewardService implements IRewardService {
 					"Customer with ID " + customerId + " has no transactions in last three months");
 		}
 
-		// Group transactions by month and calculate points
 		Map<String, Integer> monthlyPoints = transactions.stream()
 				.collect(Collectors.groupingBy(
 						transaction -> transaction.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM")),
-						Collectors.summingInt(transaction -> calculatePoints(transaction.getAmount()))));
+						Collectors.summingInt(transaction -> calculatePoints(transaction.getAmount()))
+				));
 
-		// Sum the total points
-		int sum = monthlyPoints.values().stream().mapToInt(ele -> ele).sum();
+		int sum = monthlyPoints.values().stream().mapToInt(Integer::intValue).sum();
 		ArrayList<RewardInMonth> list = new ArrayList<>();
 
-		// Map monthly points to RewardInMonth and convert to RewardsResponse
-		for (String key : monthlyPoints.keySet()) {
-			int monthNo = Integer.parseInt(key.split("-")[1]);
-			list.add(new RewardInMonth(Month.of(monthNo).getDisplayName(TextStyle.FULL, Locale.ENGLISH),
-					monthlyPoints.get(key)));
+		for (String month : lastThreeMonths) {
+			if (monthlyPoints.containsKey(month)) {
+				int monthNo = Integer.parseInt(month.split("-")[1]);
+				list.add(new RewardInMonth(Month.of(monthNo).getDisplayName(TextStyle.FULL, Locale.ENGLISH),
+						monthlyPoints.get(month)));
+			}
 		}
 
 		logger.info("Successfully calculated rewards for customer ID: {} with total points: {}", customerId, sum);
@@ -110,9 +122,9 @@ public class RewardService implements IRewardService {
 				new Transaction(12L, 103L, 115.0, LocalDate.of(2023, 8, 12)),
 				new Transaction(13L, 103L, 140.0, LocalDate.of(2023, 8, 28)),
 				new Transaction(14L, 103L, 60.0, LocalDate.of(2023, 9, 15)),
-				new Transaction(15L, 103L, 95.0, LocalDate.of(2023, 9, 27)));
+				new Transaction(15L, 103L, 95.0, LocalDate.of(2023, 9, 27))
+		);
 
-		// Group transactions by customerId and month, and calculate points for each
 		Map<Long, Map<String, Integer>> customerRewards = lastThreeMonthsTransactions.stream()
 				.collect(Collectors.groupingBy(Transaction::getCustomerId,
 						Collectors.groupingBy(transaction -> transaction.getDate().getMonth().toString(),
@@ -124,12 +136,17 @@ public class RewardService implements IRewardService {
 			Long customerId = customerEntry.getKey();
 			Map<String, Integer> monthlyPoints = customerEntry.getValue();
 
-			// Calculate the total points for the customer
 			int totalPoints = monthlyPoints.values().stream().mapToInt(Integer::intValue).sum();
 
+			List<String> sortedMonths = monthlyPoints.keySet().stream().sorted((month1, month2) -> {
+				Month m1 = Month.valueOf(month1.toUpperCase()); 
+				Month m2 = Month.valueOf(month2.toUpperCase());
+				return m2.compareTo(m1); 
+			}).collect(Collectors.toList());
+
 			ArrayList<RewardInMonth> rewardInMonths = new ArrayList<>();
-			for (Map.Entry<String, Integer> monthEntry : monthlyPoints.entrySet()) {
-				rewardInMonths.add(new RewardInMonth(monthEntry.getKey(), monthEntry.getValue()));
+			for (String month : sortedMonths) {
+				rewardInMonths.add(new RewardInMonth(month, monthlyPoints.get(month)));
 			}
 
 			rewardsResponses.add(new RewardsResponse(rewardInMonths, totalPoints, customerId));
