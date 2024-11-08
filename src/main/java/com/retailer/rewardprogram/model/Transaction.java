@@ -8,39 +8,44 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 
 /**
- * Represents a transaction in the rewards program.
- * Contains customer ID, transaction amount, and transaction date.
+ * Represents a transaction in the rewards program. Contains customer ID,
+ * transaction amount, and transaction date.
  */
 @Entity
-@Table(name="transactions")
+@Table(name = "transactions")
 public class Transaction {
-	
+
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@Column(name="customer_id")
+
+	@Column(name = "customer_id")
+	@NotNull(message = "Customer ID cannot be null.")
+	@PositiveOrZero(message = "Customer ID must be non-negative.")
 	private Long customerId;
-	
+
+	@PositiveOrZero(message = "Amount must be non-negative.")
 	private double amount;
-	
+
 	private LocalDate date;
-	
+
 	/**
-     * Default constructor for the Transaction entity.
-     */
+	 * Default constructor for the Transaction entity.
+	 */
 	public Transaction() {
 		super();
 	}
-	
+
 	/**
 	 * 
-	 * @param id the transaction ID
-     * @param customerId the customer ID associated with the transaction
-     * @param amount the transaction amount
-     * @param date the date of the transaction
+	 * @param id         the transaction ID
+	 * @param customerId the customer ID associated with the transaction
+	 * @param amount     the transaction amount
+	 * @param date       the date of the transaction
 	 */
 	public Transaction(Long id, Long customerId, double amount, LocalDate date) {
 		super();
@@ -49,41 +54,41 @@ public class Transaction {
 		this.amount = amount;
 		this.date = date;
 	}
-	
+
 	/**
-     * Returns the transaction ID.
-     * 
-     * @return transaction ID
-     */
+	 * Returns the transaction ID.
+	 * 
+	 * @return transaction ID
+	 */
 	public Long getId() {
-        return id;
-    }
+		return id;
+	}
 
 	/**
-     * Returns the customer ID associated with the transaction.
-     * 
-     * @return customer ID
-     */
-    public Long getCustomerId() {
-        return customerId;
-    }
+	 * Returns the customer ID associated with the transaction.
+	 * 
+	 * @return customer ID
+	 */
+	public Long getCustomerId() {
+		return customerId;
+	}
 
-    /**
-     * Returns the transaction amount.
-     * 
-     * @return transaction amount
-     */
-    public double getAmount() {
-        return amount;
-    }
+	/**
+	 * Returns the transaction amount.
+	 * 
+	 * @return transaction amount
+	 */
+	public double getAmount() {
+		return amount;
+	}
 
-    /**
-     * Returns the date of the transaction.
-     * 
-     * @return transaction date
-     */
-    public LocalDate getDate() {
-        return date;
-    }
-	
+	/**
+	 * Returns the date of the transaction.
+	 * 
+	 * @return transaction date
+	 */
+	public LocalDate getDate() {
+		return date;
+	}
+
 }
